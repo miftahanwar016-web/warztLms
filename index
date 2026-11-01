@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAPP Builder GAS - Vercel Edition</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   
+    <style>
+        body { 
+            background-color: #f4f5f9; 
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+
+        /* LOADER SPINNER */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* CUSTOM SCROLLBAR CLEAN & MODERN */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="text-slate-800 m-0 p-0 overflow-x-hidden">
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="app-container" class="min-h-screen flex flex-col w-full">
+       
+        <!-- LAYER: LOADING OVERLAY -->
+        <div id="global-loader" class="fixed inset-0 bg-white/90 z-[100] hidden items-center justify-center flex-col backdrop-blur-sm">
+            <div class="loader mb-4"></div>
+            <p class="text-indigo-600 font-semibold text-sm" id="loader-text">Memproses...</p>
+        </div>
+
+        <!-- LAYER: LOGIN SCREEN -->
+        <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+            <!-- Background element for modern feel -->
+            <div class="absolute inset-0 overflow-hidden -z-10 pointer-events-none">
+                <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
+                <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
+            </div>
+
+            <!-- Login Card Container -->
+            <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden max-w-5xl w-full flex flex-col md:flex-row border border-slate-100 relative z-10 min-h-[600px]">
+               
+                <!-- Left Column: Form -->
+                <div class="w-full md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-white relative">
+                    <!-- Mobile Logo -->
+                    <img src="https://iili.io/BIa29t9.md.png" alt="Logo" class="w-16 h-16 md:hidden mx-auto mb-6 object-contain drop-shadow-sm">
+                   
+                    <div class="text-center md:text-left mb-10">
+                        <h1 class="text-3xl md:text-4xl font-black text-slate-800 mb-2">LOGIN</h1>
+                        <p class="text-slate-500 text-sm">Masuk untuk mengelola ruang kerja Anda.</p>
+                    </div>
+                   
+                    <form id="login-form" class="space-y-5">
+                        <div>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fa-regular fa-user text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                                </div>
+                                <input type="text" id="username" required class="block w-full pl-12 pr-4 py-4 bg-indigo-50/50 hover:bg-indigo-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-700" placeholder="Username">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-lock text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                                </div>
+                                <input type="password" id="password" required class="block w-full pl-12 pr-4 py-4 bg-indigo-50/50 hover:bg-indigo-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-700" placeholder="Password">
+                            </div>
+                        </div>
+                       
+                        <div class="pt-2">
+                            <button type="submit" class="w-full md:w-auto md:min-w-[160px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-2xl shadow-[0_8px_20px_rgba(79,70,229,0.25)] hover:shadow-[0_10px_25px_rgba(79,70,229,0.35)] hover:-translate-y-0.5 transition-all duration-300 mx-auto md:mx-0 block">
+                                Login Now
+                            </button>
+                        </div>
+                       
+                        <div id="login-alert" class="hidden mt-4 text-sm text-red-500 bg-red-50 p-4 rounded-xl border border-red-100 text-center font-medium"></div>
+                       
+                        <!-- Preview Info (Hide on deployment by changing IS_PREVIEW to false) -->
+                        <div class="mt-8 pt-6 border-t border-slate-100" id="preview-info">
+                            <p class="text-xs font-bold text-slate-400 mb-3 text-center md:text-left uppercase tracking-wider">Mode Preview Aktif</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <div class="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-100 text-center md:text-left">
+                                    <p class="text-[10px] uppercase text-slate-400 font-bold mb-1">Admin</p>
+                                    <p class="text-xs text-indigo-600 font-semibold">admin / edudigital</p>
+                                </div>
+                                <div class="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-100 text-center md:text-left">
+                                    <p class="text-[10px] uppercase text-slate-400 font-bold mb-1">Peserta</p>
+                                    <p class="text-xs text-emerald-600 font-semibold">peserta / edudigital</p>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Graphic/Image -->
+                <div class="hidden md:flex w-1/2 bg-indigo-600 relative items-center justify-center p-12 overflow-hidden">
+                    <div class="absolute inset-0 opacity-20">
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full text-white fill-current">
+                            <path d="M0 100 C 20 0 50 0 100 100 Z"></path>
+                            <path d="M0 50 C 30 100 70 0 100 50 Z" opacity="0.5"></path>
+                        </svg>
+                    </div>
+                    <div class="absolute top-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                    <div class="absolute bottom-10 left-10 w-48 h-48 bg-indigo-800/40 rounded-full blur-2xl"></div>
+
+                    <div class="relative z-10 w-full max-w-[340px] rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/20 p-2.5 shadow-2xl transform transition-transform hover:scale-105 duration-500">
+                        <img src="https://itbox.id/wp-content/uploads/2023/01/perbedaan-programmer-dan-developer.jpeg" alt="Login Graphic" class="w-full h-[420px] object-cover rounded-[1.5rem]">
+                        <div class="absolute -left-6 top-1/2 -translate-y-1/2 bg-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.15)] border border-slate-50 animate-bounce" style="animation-duration: 3s;">
+                            <i class="fa-solid fa-bolt text-amber-400 text-2xl"></i>
+                        </div>
+                        <div class="absolute -top-4 -right-4 bg-white p-2 rounded-2xl shadow-xl border border-slate-50 transform rotate-12">
+                            <img src="https://iili.io/BIa29t9.md.png" class="w-10 h-10 object-contain">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- LAYER: DASHBOARD LAYOUT -->
+        <div id="main-layout" class="hidden flex-1 flex w-full">
+            <!-- Sidebar -->
+            <aside class="w-64 bg-white border-r border-slate-100 hidden md:flex flex-col z-20 h-screen sticky top-0">
+                <div class="p-6 flex items-center gap-3">
+                    <img src="https://iili.io/BIa29t9.md.png" alt="Logo" class="w-10 h-10 object-contain">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-extrabold text-slate-800 leading-tight">WebAPP Builder</span>
+                        <span class="text-xs text-indigo-500 font-bold">Vercel Deploy</span>
+                    </div>
+                </div>
+
+                <nav class="flex-1 px-4 py-2 space-y-1 overflow-y-auto" id="sidebar-menu"></nav>
+
+                <div class="p-4 border-t border-slate-50 m-4 bg-slate-50 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
+                            <i class="fa-regular fa-user"></i>
+                        </div>
+                        <div class="truncate">
+                            <p id="user-display-name" class="font-bold text-slate-700 text-sm truncate">User</p>
+                            <p id="user-display-role" class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Role</p>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-slate-400 hover:text-red-500 transition-colors shrink-0" title="Keluar">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 flex flex-col min-h-screen">
+                <!-- Mobile Header -->
+                <header class="md:hidden bg-white shadow-sm p-4 flex justify-between items-center z-30 sticky top-0">
+                    <div class="flex items-center gap-3">
+                        <img src="https://iili.io/BIa29t9.md.png" alt="Logo" class="w-8 h-8 object-contain">
+                        <span class="font-bold text-sm text-slate-800">WebAPP Builder</span>
+                    </div>
+                    <button onclick="toggleMobileMenu()" class="text-slate-600 bg-slate-100 w-10 h-10 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-bars text-sm"></i>
+                    </button>
+                </header>
+               
+                <!-- Mobile Menu Overlay -->
+                <div id="mobile-menu" class="hidden md:hidden bg-white shadow-xl absolute w-full z-50 top-0 left-0 border-b">
+                    <div class="p-4 flex justify-between items-center border-b border-slate-50">
+                        <span class="font-bold text-slate-800">Menu</span>
+                        <button onclick="toggleMobileMenu()" class="text-slate-500 p-2"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <nav class="p-4 space-y-1" id="mobile-sidebar-menu"></nav>
+                    <div class="p-4 border-t bg-slate-50">
+                        <button onclick="logout()" class="w-full text-red-500 bg-red-50 hover:bg-red-100 font-semibold rounded-xl py-3 flex justify-center items-center gap-2 transition-colors">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar Sistem
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="flex-1 p-5 md:p-8" id="content-area">
+                    <!-- Konten disuntikkan oleh JS -->
+                </div>
+            </main>
+        </div>
+
+        <!-- LAYER: GLOBAL ADD MODAL -->
+        <div id="add-modal" class="fixed inset-0 bg-slate-900/40 z-[200] hidden items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-slate-800" id="modal-title">Tambah Data</h3>
+                    <button onclick="closeAddModal()" class="text-slate-400 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form id="add-form" class="p-6 space-y-5 overflow-y-auto">
+                    <input type="hidden" id="form-sheet">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">NAMA / JUDUL</label>
+                        <input type="text" id="form-nama" required class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">DESKRIPSI SINGKAT</label>
+                        <textarea id="form-deskripsi" rows="3" required class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">URL THUMBNAIL (GAMBAR)</label>
+                        <input type="url" id="form-thumbnail" required placeholder="https://..." class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">LINK TUJUAN</label>
+                        <input type="url" id="form-link" required placeholder="https://..." class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeAddModal()" class="px-5 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium text-sm transition-colors">Batal</button>
+                        <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium text-sm shadow-md transition-colors">Simpan Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // ==========================================
+        // KONFIGURASI APLIKASI
+        // ==========================================
+        // Ubah IS_PREVIEW menjadi false jika API GAS Anda sudah siap
+        const IS_PREVIEW = true;
+        const GAS_URL = "URL_DEPLOY_GAS_ANDA_DISINI";
+
+        // ==========================================
+        // STATE MANAJEMEN
+        // ==========================================
+        let currentUser = null;
+        let currentMenu = 'dashboard';
+
+        // ==========================================
+        // DATA DUMMY (UNTUK MODE PREVIEW)
+        // ==========================================
+        const dummyDB = {
+            users: [
+                {id: 'U1', nama: 'Administrator', username: 'admin', role: 'admin'},
+                {id: 'U2', nama: 'Peserta Uji', username: 'peserta', role: 'peserta'}
+            ],
+            materi: [
+                {id: 'MAT-1', nama: 'Development Basics', deskripsi: 'Materi fundamental pengembangan web modern.', thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&q=80', link: 'https://docs.google.com/'},
+                {id: 'MAT-2', nama: 'UI/UX Design', deskripsi: 'Prinsip desain antarmuka dan pengalaman pengguna.', thumbnail: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=500&q=80', link: 'https://docs.google.com/'},
+                {id: 'MAT-3', nama: 'Data with Python', deskripsi: 'Analisis data dasar menggunakan Python.', thumbnail: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&q=80', link: 'https://docs.google.com/'}
+            ],
+            tools: [
+                {id: 'TOL-1', nama: 'Code Editor Online', deskripsi: 'Lingkungan pengembangan terpadu di browser.', thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&q=80', link: 'https://editor.com'}
+            ],
+            template: [
+                {id: 'TPL-1', nama: 'Sertifikat Kelulusan', deskripsi: 'Format baku sertifikat (PDF)', thumbnail: 'https://images.unsplash.com/photo-1589330694653-efa6475320c1?w=500&q=80', link: 'https://drive.google.com/dummy'}
+            ]
+        };
+
+        if(!IS_PREVIEW) document.getElementById('preview-info').style.display = 'none';
+
+        async function apiCall(action, payload = {}) {
+            if (IS_PREVIEW) {
+                await new Promise(r => setTimeout(r, 600));
+                return mockApi(action, payload);
+            } else {
+                try {
+                    const response = await fetch(GAS_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: action, payload: payload })
+                    });
+                    const data = await response.json();
+                    return data;
+                } catch (err) {
+                    return { status: 'error', message: 'Koneksi ke database gagal. Pastikan URL GAS benar.' };
+                }
+            }
+        }
+
+        function mockApi(action, payload) {
+            switch(action) {
+                case 'login':
+                    if(payload.username === 'admin' && payload.password === 'edudigital') return {status: 'success', user: dummyDB.users[0]};
+                    if(payload.username === 'peserta' && payload.password === 'edudigital') return {status: 'success', user: dummyDB.users[1]};
+                    return {status: 'error', message: 'Username/Password salah'};
+                case 'getDashboardStats':
+                    return {status: 'success', data: {
+                        materi: dummyDB.materi ? dummyDB.materi.length : 0,
+                        tools: dummyDB.tools ? dummyDB.tools.length : 0,
+                        template: dummyDB.template ? dummyDB.template.length : 0,
+                        users: dummyDB.users ? dummyDB.users.length : 0
+                    }};
+                case 'getData':
+                    return {status: 'success', data: dummyDB[payload.sheetName] || []};
+                case 'addData':
+                    if(!dummyDB[payload.sheetName]) dummyDB[payload.sheetName] = [];
+                    dummyDB[payload.sheetName].push(payload.data);
+                    return {status: 'success', message: 'Berhasil'};
+                case 'deleteData':
+                    dummyDB[payload.sheetName] = dummyDB[payload.sheetName].filter(item => item[payload.idCol] !== payload.idVal);
+                    return {status: 'success', message: 'Dihapus'};
+                default:
+                    return {status: 'error', message: 'Unknown action'};
+            }
+        }
+
+        function showLoader(text = "Memproses...") {
+            document.getElementById('loader-text').innerText = text;
+            document.getElementById('global-loader').style.display = 'flex';
+        }
+        function hideLoader() { document.getElementById('global-loader').style.display = 'none'; }
+       
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function showAlert(msg) { alert(msg); }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const alertBox = document.getElementById('login-alert');
+           
+            showLoader("Otentikasi Sistem...");
+            alertBox.classList.add('hidden');
+           
+            const res = await apiCall('login', {username: u, password: p});
+            hideLoader();
+
+            if(res.status === 'success') {
+                currentUser = res.user;
+                localStorage.setItem('lmsUserSession', JSON.stringify(currentUser));
+                initApp();
+            } else {
+                alertBox.innerText = res.message;
+                alertBox.classList.remove('hidden');
+            }
+        });
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('lmsUserSession');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('main-layout').classList.add('hidden');
+            document.getElementById('login-form').reset();
+            document.getElementById('mobile-menu').classList.add('hidden');
+        }
+
+        function initApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-layout').classList.remove('hidden');
+           
+            document.getElementById('user-display-name').innerText = currentUser.nama;
+            document.getElementById('user-display-role').innerText = currentUser.role;
+
+            buildMenu();
+            loadView('dashboard');
+        }
+
+        function buildMenu() {
+            const menus = [
+                { id: 'dashboard', icon: 'fa-table-cells-large', label: 'Dashboard', roles: ['admin', 'peserta'] },
+                { id: 'materi', icon: 'fa-book-open', label: currentUser.role === 'admin' ? 'Kelola Materi' : 'My Courses', roles: ['admin', 'peserta'] },
+                { id: 'tools', icon: 'fa-cube', label: currentUser.role === 'admin' ? 'Kelola Tools' : 'Resources', roles: ['admin', 'peserta'] },
+                { id: 'template', icon: 'fa-layer-group', label: currentUser.role === 'admin' ? 'Kelola Template' : 'Templates', roles: ['admin', 'peserta'] }
+            ];
+
+            let menuHTML = '';
+            menus.forEach(m => {
+                if(m.roles.includes(currentUser.role)) {
+                    menuHTML += `
+                        <a href="#" onclick="loadView('${m.id}'); toggleMobileMenu();" id="menu-${m.id}"
+                           class="flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-800 transition-all mb-1">
+                            <i class="fa-solid ${m.icon} w-5 text-center text-[18px]"></i>
+                            <span class="text-sm">${m.label}</span>
+                        </a>
+                    `;
+                }
+            });
+
+            document.getElementById('sidebar-menu').innerHTML = menuHTML;
+            document.getElementById('mobile-sidebar-menu').innerHTML = menuHTML;
+        }
+
+        function setActiveMenu(id) {
+            document.querySelectorAll('[id^="menu-"]').forEach(el => {
+                el.classList.remove('bg-indigo-50', 'text-indigo-600', 'font-bold');
+                el.classList.add('text-slate-500', 'font-medium');
+            });
+            const activeEls = document.querySelectorAll(`#menu-${id}`);
+            activeEls.forEach(el => {
+                el.classList.remove('text-slate-500', 'font-medium', 'hover:bg-slate-50');
+                el.classList.add('bg-indigo-50', 'text-indigo-600', 'font-bold');
+            });
+        }
+
+        async function loadView(viewId) {
+            currentMenu = viewId;
+            setActiveMenu(viewId);
+            const content = document.getElementById('content-area');
+            content.innerHTML = '';
+
+            showLoader();
+           
+            if(viewId === 'dashboard') await renderDashboard(content);
+            if(viewId === 'materi') await renderMateri(content);
+            if(viewId === 'tools') await renderTools(content);
+            if(viewId === 'template') await renderTemplate(content);
+           
+            hideLoader();
+        }
+
+        // --- DASHBOARD RENDERER ---
+        function cardUI(title, count, icon, colorBase) {
+            const colorMap = {
+                'indigo': 'bg-indigo-50 text-indigo-500',
+                'emerald': 'bg-emerald-50 text-emerald-500',
+                'purple': 'bg-purple-50 text-purple-500',
+                'amber': 'bg-amber-50 text-amber-500'
+            };
+            const style = colorMap[colorBase] || 'bg-slate-50 text-slate-500';
+
+            return `
+            <div class="bg-white rounded-3xl p-5 flex items-center gap-4 border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] transition-transform hover:-translate-y-1">
+                <div class="${style} w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0">
+                    <i class="fa-solid ${icon}"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-black text-slate-800 leading-tight">${count}</h3>
+                    <p class="text-xs text-slate-500 font-semibold mt-0.5">${title}</p>
+                </div>
+            </div>`;
+        }
+
+        async function renderDashboard(container) {
+            const res = await apiCall('getDashboardStats');
+            const stats = {
+                materi: res?.data?.materi || res?.data?.ujian || 0,
+                tools: res?.data?.tools || 0,
+                template: res?.data?.template || 0,
+                users: res?.data?.users || 0
+            };
+
+            let statsCardsHTML = `
+                ${cardUI('Total Materi', stats.materi, 'fa-book-open', 'indigo')}
+                ${cardUI('Total Tools', stats.tools, 'fa-cube', 'emerald')}
+                ${cardUI('Template', stats.template, 'fa-layer-group', 'purple')}
+            `;
+           
+            let gridClass = "grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6 mb-8";
+
+            if (currentUser.role === 'admin') {
+                statsCardsHTML += cardUI('Pengguna Aktif', stats.users, 'fa-users', 'amber');
+                gridClass = "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8";
+            }
+
+            let statsCards = `<div class="${gridClass}">${statsCardsHTML}</div>`;
+
+            let welcome = `
+                <div class="bg-white rounded-3xl p-6 lg:p-8 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+                    <div>
+                        <h2 class="text-2xl lg:text-3xl font-extrabold text-slate-800 mb-1">Halo, ${currentUser.nama}! 👋</h2>
+                        <p class="text-slate-500 text-sm">Terus kembangkan kemampuanmu hari ini.</p>
+                    </div>
+                    <div class="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 flex items-center gap-2 shrink-0">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">${currentUser.role} Access</span>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = welcome + statsCards;
+        }
+
+        // --- GENERIC RENDERER (SMALLER CARDS) ---
+        async function renderGenericMenu(container, sheetName, title, themeColor) {
+            container.innerHTML = `
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h2 class="text-xl font-extrabold text-slate-800">${title}</h2>
+                    ${currentUser.role === 'admin' ? `
+                    <button onclick="openAddModal('${sheetName}', '${title}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm shadow-indigo-200 transition-all shrink-0">
+                        <i class="fa-solid fa-plus mr-2"></i>Tambah Baru
+                    </button>
+                    ` : ''}
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-5" id="${sheetName}-grid">
+                    <p class="text-slate-400 text-sm col-span-full">Memuat data...</p>
+                </div>
+            `;
+
+            const res = await apiCall('getData', {sheetName: sheetName});
+            const grid = document.getElementById(`${sheetName}-grid`);
+           
+            if(res.status === 'success' && res.data.length > 0) {
+                grid.innerHTML = '';
+                res.data.forEach(item => {
+                    grid.innerHTML += `
+                        <div class="bg-white rounded-3xl border border-slate-100 shadow-[0_2px_12px_rgb(0,0,0,0.03)] hover:shadow-lg transition-all duration-300 flex flex-col group p-2 relative">
+                            <div class="h-32 w-full overflow-hidden relative rounded-2xl bg-slate-50">
+                                <img src="${item.thumbnail || 'https://placehold.co/400x200?text=No+Image'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/400x200?text=Error'">
+                            </div>
+                           
+                            <div class="p-3 flex-1 flex flex-col bg-white">
+                                <h3 class="font-bold text-[15px] text-slate-800 mb-1 line-clamp-1">${item.nama}</h3>
+                                <p class="text-[12px] text-slate-500 mb-4 line-clamp-2 leading-relaxed">${item.deskripsi}</p>
+                               
+                                <div class="mt-auto flex justify-between items-center gap-2">
+                                    <a href="${item.link}" target="_blank" class="flex-1 text-center bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-xl text-[12px] font-bold transition-colors">
+                                        Buka <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i>
+                                    </a>
+                                    ${currentUser.role === 'admin' ? `
+                                    <button onclick="deleteRow('${sheetName}', 'id', '${item.id}')" class="text-red-400 bg-red-50 hover:bg-red-500 hover:text-white w-9 h-9 flex items-center justify-center rounded-xl transition-colors shrink-0" title="Hapus Data">
+                                        <i class="fa-regular fa-trash-can text-[13px]"></i>
+                                    </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                grid.innerHTML = `
+                <div class="col-span-full py-16 flex flex-col items-center justify-center text-center bg-white rounded-3xl border border-dashed border-slate-200">
+                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 text-2xl mb-3"><i class="fa-solid fa-folder-open"></i></div>
+                    <p class="text-slate-500 text-sm font-medium">Belum ada data yang ditambahkan.</p>
+                </div>`;
+            }
+        }
+
+        async function renderMateri(container) {
+            const title = currentUser.role === 'admin' ? 'Manajemen Materi' : 'My Courses';
+            await renderGenericMenu(container, 'materi', title, 'indigo');
+        }
+        async function renderTools(container) {
+            const title = currentUser.role === 'admin' ? 'Manajemen Tools' : 'Resources';
+            await renderGenericMenu(container, 'tools', title, 'emerald');
+        }
+        async function renderTemplate(container) {
+            const title = currentUser.role === 'admin' ? 'Kelola Template' : 'Templates';
+            await renderGenericMenu(container, 'template', title, 'purple');
+        }
+
+        async function deleteRow(sheetName, idCol, idVal) {
+            if(confirm('Yakin ingin menghapus data ini?')) {
+                showLoader('Menghapus data...');
+                const res = await apiCall('deleteData', {sheetName, idCol, idVal});
+                if(res.status === 'success') {
+                    loadView(sheetName);
+                } else {
+                    hideLoader();
+                    showAlert('Gagal menghapus: ' + res.message);
+                }
+            }
+        }
+
+        function openAddModal(sheetName, title) {
+            document.getElementById('form-sheet').value = sheetName;
+            document.getElementById('modal-title').innerText = "Tambah " + title;
+            document.getElementById('add-form').reset();
+            document.getElementById('add-modal').style.display = 'flex';
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-modal').style.display = 'none';
+        }
+
+        document.getElementById('add-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const sheetName = document.getElementById('form-sheet').value;
+           
+            showLoader("Menyimpan data...");
+            closeAddModal();
+
+            const prefix = sheetName.substring(0, 3).toUpperCase();
+            const newId = prefix + '-' + Date.now().toString().slice(-6);
+           
+            const data = {
+                id: newId,
+                nama: document.getElementById('form-nama').value,
+                deskripsi: document.getElementById('form-deskripsi').value,
+                thumbnail: document.getElementById('form-thumbnail').value,
+                link: document.getElementById('form-link').value
+            };
+
+            const res = await apiCall('addData', {sheetName: sheetName, data});
+            if(res.status === 'success') {
+                loadView(sheetName);
+            } else {
+                hideLoader();
+                showAlert('Gagal menyimpan: ' + res.message);
+            }
+        });
+
+        window.onload = () => {
+            const savedSession = localStorage.getItem('lmsUserSession');
+            if(savedSession) {
+                currentUser = JSON.parse(savedSession);
+                initApp();
+            }
+        };
+
+    </script>
+</body>
+</html>
